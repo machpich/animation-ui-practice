@@ -71,3 +71,5 @@ export default defineConfig([
   },
 ])
 ```
+## deploy
+do merge to main branch only
