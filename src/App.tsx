@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
-import Animation1 from './pages/animation/animation-1.tsx'
+import Animation1 from './pages/animation/hover-effect/animation-1.tsx'
 import './App.css'
 
 function App() {
