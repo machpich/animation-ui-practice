@@ -1,19 +1,17 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Layout from './components/Layout'
 import Home from './pages/Home'
-import About from './pages/About'
+import Animation1 from './pages/animation/animation-1.tsx'
 import './App.css'
 
 function App() {
   return (
     <BrowserRouter basename="/animation-ui-practice">
-      <nav style={{ padding: '1rem', marginBottom: '2rem' }}>
-        <Link to="/" style={{ marginRight: '1rem' }}>Home</Link>
-        <Link to="/about">About</Link>
-      </nav>
-
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/about" element={<About />} />
+        <Route element={<Layout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/animation-1" element={<Animation1 />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )
