@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import Animation1 from '../pages/animation/hover-effect/animation-1'
+import HoverEffect from './HoverEffect'
 
 const meta = {
-  title: 'Animations/hover-effect',
-  component: Animation1,
+  title: 'Animations/Hover Effect',
+  component: HoverEffect,
   parameters: {
     layout: 'centered',
   },
-} satisfies Meta<typeof Animation1>
+} satisfies Meta<typeof HoverEffect>
 
 export default meta
 type Story = StoryObj<typeof meta>
