@@ -1,0 +1,20 @@
+import { Meta, Canvas } from '@storybook/blocks'
+import * as Animation1Stories from './Animation1.stories'
+
+<Meta title="Gallery" />
+
+# アニメーション ギャラリー
+
+複数のアニメーションサンプルを一度に確認できます。
+
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+  gap: '2rem',
+  marginTop: '2rem',
+}}>
+  <div>
+    <h3>hover-effect</h3>
+    <Canvas of={Animation1Stories.Default} />
+  </div>
+</div>
