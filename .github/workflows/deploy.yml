@@ -1,4 +1,4 @@
-name: Deploy Vite app to GitHub Pages
+name: Deploy Storybook to GitHub Pages
 
 on:
   push:
@@ -32,12 +32,12 @@ jobs:
         run: npm install
 
       - name: Build
-        run: npm run build
+        run: npm run build-storybook
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: storybook-static
 
   deploy:
     needs: build
