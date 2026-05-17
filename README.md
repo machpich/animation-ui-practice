@@ -11,13 +11,12 @@ Web のアニメーション表現を試すための個人リポジトリ。
 ## 技術スタック
 
 - React 19 + TypeScript
-- Vite
-- Storybook 8（開発環境 / 本公開）
-- アニメーション関連: hover-effect ほか（順次追加予定）
+- Storybook 8（Vite ベース、開発環境 / 本公開）
+- アニメーション関連: hover-effect、Rive ほか（順次追加予定）
 
 ## 開発
 
-### Storybook でローカル確認
+### ローカル確認
 
 ```bash
 npm install
@@ -25,30 +24,17 @@ npm run storybook
 # http://localhost:6007 で起動（ポート 6006 が占有されている場合）
 ```
 
-### Vite でのローカル確認（参考）
-
-```bash
-npm run dev
-```
+Storybook が唯一の開発・公開環境です。
 
 ## ビルド
-
-### Storybook ビルド
 
 ```bash
 npm run build-storybook
 ```
 
-### Vite ビルド（参考）
-
-```bash
-npm run build
-```
-
 ## デプロイ
 
 main ブランチへのマージで GitHub Pages に自動デプロイされる（`.github/workflows/deploy.yml`）。
-公開先は Storybook ビルド結果です。
 
 ## 進行中の作業
 
