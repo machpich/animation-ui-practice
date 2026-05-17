@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import LikeAnimation from '../pages/animation/rive/rive-animation-1'
+import LikeAnimation from './LikeAnimation'
 
 const meta = {
   title: 'Animations/Rive',

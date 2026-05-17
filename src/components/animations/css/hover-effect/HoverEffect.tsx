@@ -3,9 +3,9 @@ import { useEffect, useRef } from 'react'
 import image1 from './assets/from.jpg'
 import image2 from './assets/to.jpg'
 import displacement from './assets/displacement.png'
-import styles from './animation-1.module.css'
+import styles from './HoverEffect.module.css'
 
-function Animation1() {
+function HoverEffect() {
   const containerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -32,4 +32,4 @@ function Animation1() {
     )
 }
 
-export default Animation1
+export default HoverEffect
