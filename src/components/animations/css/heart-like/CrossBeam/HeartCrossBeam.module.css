@@ -1,0 +1,177 @@
+.container {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  background-color: #fff;
+  overflow: hidden;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.wrapper {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  transform: scale(3.4);
+}
+
+.heart {
+  --size: 24px;
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+}
+
+.heartStroke {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* 塗りつぶしハート（押した瞬間に弾む） */
+@keyframes popup {
+  0% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1.6);
+  }
+  60% {
+    transform: scale(1.04);
+  }
+  80% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1.04);
+  }
+}
+
+.heartFill {
+  position: absolute;
+  top: 5.3%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  animation: popup 0.7s ease-in-out 0.2s both;
+}
+
+/* 十字（4本のバーを上下左右に配置） */
+.cross {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.crossBar {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  height: 50%;
+  transform-origin: bottom center;
+}
+
+.crossBar:nth-child(1) {
+  transform: translateX(-50%);
+}
+.crossBar:nth-child(2) {
+  transform: translateX(-50%) rotate(90deg);
+}
+.crossBar:nth-child(3) {
+  transform: translateX(-50%) rotate(180deg);
+}
+.crossBar:nth-child(4) {
+  transform: translateX(-50%) rotate(270deg);
+}
+
+/* line バリエーション：細い線がスリット内を流れる */
+.crossLine {
+  width: 160%;
+  height: 160%;
+}
+
+.crossLine .crossBar {
+  width: 1px;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.crossLine .crossBar::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background-color: currentColor;
+  animation: cross-line-slide 0.45s cubic-bezier(0.75, 0.02, 0.15, 1) var(--delay, 0s) both;
+}
+
+@keyframes cross-line-slide {
+  from {
+    transform: translateY(-101%);
+  }
+  to {
+    transform: translateY(101%);
+  }
+}
+
+/* seg バリエーション：短いセグメントが外へ流れる */
+.crossSeg {
+  width: 220%;
+  height: 220%;
+}
+
+.crossSeg .crossBar {
+  width: 2.5px;
+}
+
+.crossSegInner {
+  display: block;
+  width: 100%;
+  height: 40%;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.crossSegInner::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background-color: currentColor;
+  animation: cross-seg-slide 1s cubic-bezier(0.75, 0.02, 0.15, 1) var(--delay, 0s) both;
+}
+
+@keyframes cross-seg-slide {
+  from {
+    transform: translateY(101%);
+  }
+  to {
+    transform: translateY(-101%);
+  }
+}
+
+/* 各レイヤーの色・回転・タイミング */
+.cross0 {
+  --delay: 0s;
+  color: #fe587a;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+.cross1 {
+  --delay: 0.3s;
+  color: #f9dc65;
+  width: 150%;
+  height: 150%;
+  transform: translate(-50%, -50%);
+}
+.cross2 {
+  --delay: 0.4s;
+  color: #f9dc65;
+  transform: translate(-50%, -50%) rotate(45deg);
+}

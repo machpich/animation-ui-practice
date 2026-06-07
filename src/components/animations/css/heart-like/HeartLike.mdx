@@ -1,0 +1,135 @@
+import { Meta, Unstyled } from '@storybook/addon-docs/blocks'
+
+<Meta title="Animations/Heart Like/About" />
+
+<Unstyled>
+<div className="prose">
+
+# Heart Like Animation の考え方
+
+「いいね（ハート）を押した時」のアニメーションを CSS で実装した 3 パターンです。
+参照元: [yui540/css-animations 2026-06-07](https://github.com/yui540/css-animations/tree/main/2026-06-07)
+
+各 Story でハートをクリックすると **いいね ON**（エフェクト再生）/ もう一度で **解除** のトグルになります。
+
+## 設計思想
+
+<dl>
+  <dt>土台は共通、違いはエフェクトだけ</dt>
+  <dd>
+    3 パターンとも「枠線ハート + 塗りハート（popup で弾む）」という土台は同じで、変わるのは
+    fill の周りに散らすエフェクト（粒子 / ミニハート / 十字光線）だけです。共通部分を理解すれば、
+    新しいパターンはエフェクト差し替えで増やせます。
+  </dd>
+  <dt>SVG 2 枚の重ね</dt>
+  <dd>
+    ハートは枠線と塗りの 2 つのパスを重ねて表現します（パスは <code>heart.ts</code> に定義し、
+    色やグラデーションをコードから制御できるよう SVG をインライン化しています）。
+    小さい 24px を <code>scale(3.4)</code> で拡大し、線の太さや余白の比率を保ったまま大きく見せます。
+  </dd>
+  <dt>「押した瞬間」を主役にする</dt>
+  <dd>
+    どのパターンでも主役は塗りハートの弾み（<code>popup</code>）です。エフェクトはあくまで脇役として、
+    主役を引き立てる方向で設計します。
+  </dd>
+</dl>
+
+## 核になる popup キーフレーム
+
+押した瞬間の「ポンッ」という手応えは、塗りハートの弾みで作ります。
+
+```css
+@keyframes popup {
+  0%   { transform: scale(0); }
+  40%  { transform: scale(1.6); }  /* 一度大きく飛び出す */
+  60%  { transform: scale(1.04); } /* 行き過ぎて戻る */
+  80%  { transform: scale(1.1); }  /* もう一度小さく弾む */
+  100% { transform: scale(1.04); } /* 少し大きめで着地 */
+}
+```
+
+一度大きく飛び出してから 2 段階で落ち着くことで、弾性のある自然な動きになります。
+
+## クリックで再生させる仕組み（React 化のポイント）
+
+参照元はページ読み込みで自動再生するだけですが、ここでは「押した時」に再生する必要があります。
+CSS アニメーションは **同じ要素のままでは再発火しない**ため、いいねが OFF → ON になるたびに
+`key` を更新してエフェクト要素を**作り直し（再マウント）**ています。
+
+```tsx
+const [liked, setLiked] = useState(false)
+const [burstKey, setBurstKey] = useState(0)
+
+const handleClick = () => {
+  setLiked((prev) => {
+    if (!prev) setBurstKey((k) => k + 1) // ON になる時だけ key を更新
+    return !prev
+  })
+}
+// ...
+{liked && <div key={burstKey}>{/* エフェクト一式 */}</div>}
+```
+
+解除（ON → OFF）の時はエフェクトを出さず、塗りハートを消すだけにしています。
+
+## React を使わない版（pure HTML + CSS）
+
+状態管理は React の <code>useState</code> でなくても、<code>&lt;input type="checkbox"&gt;</code> の
+<code>:checked</code> で代用できます（**Checkbox (Pure HTML+CSS)** の Story）。
+
+- <code>&lt;label&gt;</code> で全体を囲み、ハートのどこをクリックしてもトグルされるようにする
+- <code>.toggle:checked ~ .heart .effects</code>（兄弟セレクタ）で、チェック ON のときだけ
+  エフェクトを表示。<code>display: none → block</code> の切り替えで CSS アニメーションが再発火する
+
+> 「OFF → ON で 1 回再生」までは pure CSS で再現できます。React 化が効くのは
+> 「ON を連打しても毎回頭から再生」や「色を props で動的に渡す」といった、
+> より動的な制御が必要な場面です。
+
+## パターン別の考え方
+
+<dl>
+  <dt>Particle Burst（粒子バースト）</dt>
+  <dd>
+    Twitter/X の「いいね」に最も近い王道。<code>.particle</code> を 10 個並べ、<code>--rotate</code> を
+    36° 刻みで放射状に配置。<code>nth-child(2n/3n/4n)</code> でサイズ・色・遅延をばらつかせ、
+    リング（<code>.circle</code>）が外へ広がります。
+  </dd>
+  <dt>Heart Burst（ハート飛散）</dt>
+  <dd>
+    粒子の代わりにミニハートが舞うリッチ寄りの表現。<code>.deco</code> 側の <code>fly</code> と img 側の
+    <code>move</code>（<code>--x / --y / --r</code>）の 2 段重ねで、1 つずつ別方向・別タイミングに飛ばします。
+  </dd>
+  <dt>Cross Beam（十字光線）</dt>
+  <dd>
+    粒子を使わず「線の動き」だけで成立させる技巧的なパターン。十字に並べたバーの中を
+    <code>::after</code> が <code>translateY</code> で滑り、<code>overflow: hidden</code> でスリットのように見せます。
+  </dd>
+</dl>
+
+## 発展：塗りハートのグラデーション化
+
+塗りハートは中身が見える SVG なので、グラデーションにもできます（**Particle Burst** の `Gradient` Story）。
+<code>&lt;img&gt;</code> をインライン SVG に置き換え、<code>linearGradient</code> で塗ります。
+
+```tsx
+<svg className={styles.fill} viewBox="0 0 24 25">
+  <defs>
+    <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stopColor="#ff8aa0" />
+      <stop offset="100%" stopColor="#fe2f6d" />
+    </linearGradient>
+  </defs>
+  <path d={HEART_PATH} fill={`url(#${gradientId})`} />
+</svg>
+```
+
+> グラデーションの <code>id</code> はコンポーネントごとに <code>useId()</code> でユニークにし、
+> 同一ページに複数置いても塗りが混ざらないようにします。
+
+## 動かして確認
+
+左のサイドバーから各 Story（Particle Burst の Solid / Gradient、Heart Burst、Cross Beam）を開き、
+ハートをクリックしてください。
+
+</div>
+</Unstyled>
