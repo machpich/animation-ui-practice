@@ -13,6 +13,10 @@ dist-ssr
 storybook-static
 *.local
 
+# 個人の作業置き場（中身はリポジトリに含めない。ディレクトリ自体は .keep で残す）
+/local/*
+!/local/.keep
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -23,3 +27,11 @@ storybook-static
 *.njsproj
 *.sln
 *.sw?
+
+# 共有する Claude 設定だけ再許可（グローバル .gitignore_global の .claude/* を上書き）
+# settings.local.json などの個人ローカル設定は引き続き無視する
+!.claude/
+.claude/*
+!.claude/CLAUDE.md
+!.claude/PULL_REQUEST_GUIDE.md
+!.claude/skills/

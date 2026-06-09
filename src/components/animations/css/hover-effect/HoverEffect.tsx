@@ -22,12 +22,7 @@ function HoverEffect() {
 
   return (
     <div className={styles.mainContainer}>
-      <div className={styles.description}>
-        <h1>hover-effect</h1>
-        <p>hoverで画面がエフェクト付きで切り替わる。エフェクトはグレースケールの画像なら何でも良さそう</p>
-        <p>パズルっぽい組み方ができる</p>
-      </div>
-      <div ref={containerRef} className={styles.animationContainer} style={{ height: 700, width: 700 }} />
+      <div ref={containerRef} className={styles.animationContainer} style={{ height: 300, width: 300 }} />
     </div>
     )
 }
