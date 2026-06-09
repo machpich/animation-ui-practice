@@ -6,6 +6,15 @@ const meta = {
   component: LikeAnimation,
   parameters: {
     layout: 'centered',
+    docs: {
+      description: {
+        component:
+          'Rive で作った「いいね」アニメーション。`.riv` ファイルを `@rive-app/react-canvas` が ' +
+          'canvas に描画する。アニメの中身は Rive エディタ側にあり、React からは ' +
+          'ステートマシン（`state_machine` の `active` 入力）の値を切り替えて再生を制御する。' +
+          'CSS アニメとは仕組みが異なり、コード側に keyframes は持たない。',
+      },
+    },
   },
   argTypes: {
     width: {
