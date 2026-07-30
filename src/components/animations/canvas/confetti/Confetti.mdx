@@ -1,0 +1,130 @@
+import { Meta, Unstyled } from '@storybook/addon-docs/blocks'
+
+<Meta title="Animations/Confetti/About" />
+
+<Unstyled>
+<div className="prose">
+
+# Confetti / 花吹雪 の考え方
+
+クリックで紙片（花びら）が舞う「花吹雪」を **canvas + JS の粒子システム**で実装した 3 パターンです。
+発射のしかたを変えることで、バースト / 花火 / キャノンの 3 つの表現を作り分けています。
+
+各 Story のボタンを押すたびに、その場で粒子を生成して再生します。
+
+## なぜ canvas なのか（CSS ではなく）
+
+このリポジトリの多くは CSS アニメーションですが、花吹雪は
+
+- 数百粒を**同時に個別制御**する（1 粒ごとに速度・回転・寿命が違う）
+- **重力・抗力**で自然に落として、ばらつきを持たせたい
+- 発射モードを**物理を共有したまま**差し替えたい
+
+という要件から、CSS キーフレームより **canvas に 1 粒ずつ描くほうが素直**です。
+そのため `css/` ではなく `canvas/` カテゴリに置いています。
+
+## 設計思想
+
+<dl>
+  <dt>物理は共通、違いは「撒き方」だけ</dt>
+  <dd>
+    3 パターンとも、重力・抗力・ひらひら回転・寿命管理・描画は共有モジュール
+    <code>confetti.ts</code> の <code>useConfetti</code> に集約しています。各パターンが持つのは
+    「<strong>どこから・どの向きに・何粒まくか</strong>」という <code>spawn</code> 関数だけです。
+    新しい表現は spawn を書くだけで増やせます。
+  </dd>
+  <dt>1 粒は「位置・速度・見た目・寿命」の塊</dt>
+  <dd>
+    <code>createParticle(x, y, angle, speed)</code> で、指定位置から角度・初速をもって撃ち出す
+    1 粒を作ります。以降は毎フレーム <code>vy += gravity</code>（落下）→ <code>v *= 1 - drag</code>（減速）
+    → 位置更新、という同じ計算を全粒に回すだけです。
+  </dd>
+  <dt>ひらひら感は回転 2 種で作る</dt>
+  <dd>
+    <code>rotation</code>（紙片そのものの回転）と <code>tiltAngle</code>（傾き）を別々に進め、
+    傾きの <code>sin</code> で横幅を伸縮させています。これで紙片が翻って表裏が入れ替わるように見えます。
+  </dd>
+</dl>
+
+## 核になるループ（confetti.ts）
+
+毎フレーム、全粒に同じ物理を回し、寿命切れ・画面外を間引きます。
+
+```ts
+p.vy += p.gravity        // 重力で下向きに加速
+p.vx *= 1 - p.drag       // 抗力で減速
+p.vy *= 1 - p.drag
+p.x += p.vx
+p.y += p.vy
+p.rotation += p.rotationSpeed
+p.tiltAngle += p.tiltSpeed
+p.life -= p.decay        // 徐々に透明化
+
+if (p.life <= 0 || p.y - p.size > h) particles.splice(i, 1) // 消滅
+```
+
+粒が残っている間だけ <code>requestAnimationFrame</code> を予約し、尽きたらループを止めるので、
+待機中は CPU を使いません。
+
+## パターン別の考え方（＝ spawn の違い）
+
+<dl>
+  <dt>Burst（バースト）</dt>
+  <dd>
+    中央 1 点から角度を <strong>一様乱数 0〜2π</strong> にして全方位へ 160 粒。
+    どの向きにも均等に飛ぶので、まん丸に弾けます。
+  </dd>
+  <dt>Fireworks（花火）</dt>
+  <dd>
+    打ち上げ点を画面上半分に <strong>3 箇所ばらけさせ</strong>、各点 80 粒を放射状に開かせます。
+    点を分けることで「複数箇所で連続して開いた」ように見えます。
+  </dd>
+  <dt>Cannons（キャノン）</dt>
+  <dd>
+    左右の下隅を砲台にして、<strong>狭い角度範囲・強い初速</strong>で斜め上へ撃ち出します。
+    左は右上・右は左上向きにして、中央上空で 2 方向が交差します。
+  </dd>
+</dl>
+
+## 形状の汎用化（rect / circle / petal）
+
+「どんな形を動かすか」は物理と切り離し、<code>shapes</code> prop で差し替えられます。
+既定は元コード由来の <code>rect</code> + <code>circle</code> ですが、<code>petal</code> を渡すと
+ベジェ曲線で描いたしずく型の花びらになり、より桜吹雪らしくなります。
+
+```tsx
+<Burst />                     // 紙吹雪（rect + circle）
+<Burst shapes={['petal']} />  // 桜の花びら
+```
+
+## クリックで再生させる仕組み
+
+CSS 版（heart-like）は再発火のために <code>key</code> で要素を作り直していましたが、
+canvas 版は仕組みが違います。ボタンの <code>onClick</code> で <code>spawn</code> を呼んで
+粒子配列に追加し、ループが止まっていれば <code>requestAnimationFrame</code> を起動します。
+連打すると、走っているループにそのまま粒が足されるので、重ねて発射できます。
+
+> 元の実装にあったスクロール連動の「風」は、Storybook 上ではスクロール量が限られ効果が見えにくいため、
+> ここでは外し、クリック発射の 3 モードに絞っています。
+
+## 連発（パンッ…パンッ）
+
+<code>repeat</code> prop に 2 以上を渡すと、1 秒差で連続発射できます（各 Story の **Double**）。
+仕組みは単純で、1 発目をその場で撒き、2 発目以降を <code>setTimeout</code> で予約するだけです。
+物理ループは走りっぱなしのところへ粒が足されるので、追い撒きが自然に重なります。
+
+```ts
+fire({ repeat: 2, interval: 1000 })
+// → burstOnce() を今すぐ 1 回、1 秒後にもう 1 回
+```
+
+> 予約した <code>setTimeout</code> の id は控えておき、アンマウント時に <code>clearTimeout</code> でまとめて止めます
+> （撒く前にコンポーネントが消えても、タイマーが取り残されないようにするため）。
+
+## 動かして確認
+
+左のサイドバーから各 Story（Burst / Fireworks / Cannons、それぞれ Default / Petal）を開き、
+ボタンを押してください。連打すると重ねて発射できます。
+
+</div>
+</Unstyled>
