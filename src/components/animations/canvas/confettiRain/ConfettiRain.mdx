@@ -1,0 +1,77 @@
+import { Meta, Unstyled } from '@storybook/addon-docs/blocks'
+
+<Meta title="Animations/Confetti Rain/About" />
+
+<Unstyled>
+<div className="prose">
+
+# Confetti Rain / 降り続ける紙吹雪 の考え方
+
+上から**ひらひら降ってくる**紙吹雪を canvas で実装したパターンです。
+弾ける Confetti（Burst / Fireworks / Cannons）とは狙いが違い、**画面に降らせ続ける演出**を想定しています。
+
+- トリガー無しでマウント後に自動で降り始める
+- 重力で加速せず**一定速度**で降り続ける
+- **囲んだ範囲（children）の背面**に降り、children は前面に出る
+
+## Confetti と物理を共有しない理由
+
+弾ける Confetti は重力で**加速し続け**、寿命で消える設計です。Rain は加速せず一定速度で落ち、
+消えずに量を保つよう**上から補充し続ける**ため、物理も供給方式も逆になります。
+そこで共有フックには乗せず、独立した rAF ループとして実装しています。
+
+## 1 片の動き
+
+矩形の紙片 1 枚を、次の要素で「ひらひら」に見せます。
+
+- **落下＋横流れ**: 一定の <code>vy</code>（下）と <code>vx</code>（横）を毎フレーム足す
+- **傾き <code>tilt</code>**: <code>ctx.rotate</code> で紙面を斜めに回す
+- **翻り <code>spin</code>**: <code>cos</code> で <code>scaleX</code> を ±1 に伸縮させ、横幅が潰れて裏返るように見せる
+- **奥行き <code>depth</code>**: 奥ほど小さく・遅く・薄くしてレイヤー感を出す
+
+## 引数
+
+- **amount**: 同時に降っている枚数の目安。毎フレームこの数を保つよう補充する
+- **duration**: 降らせ続ける時間（ミリ秒）。経過後は補充を止め、残りが降り切ったら終了する。**未指定なら無限**
+- **speed**: 落下・横流れの倍率（1 が標準）
+
+## 範囲と重なり（children・layer）
+
+<code>&lt;Rain&gt;...&lt;/Rain&gt;</code> で中身を囲むと、その領域に canvas を敷いて範囲内だけに降らせます。
+<code>layer</code> で children に対する降らせ方を選べます。
+
+- **back**（既定）: children の背面だけに降る
+- **front**: children の前面だけに降る
+- **both**: 前後 2 層に降らせ、children を挟む（<code>amount</code> を 2 層に配分）
+
+背面 canvas を <code>z-index: 0</code>、children を <code>1</code>、前面 canvas を <code>2</code> に重ね、
+canvas は <code>pointer-events: none</code> でクリックを下へ透過させます。
+
+```tsx
+<Rain layer="both" amount={80}>
+  <YourContent />
+</Rain>
+```
+
+children は必須ではありません。囲めない場所では、<code>className</code> / <code>style</code> で
+サイズ・位置を指定して**単体**で置けます。
+
+```tsx
+<Rain style={{ width: 320, height: 320 }} />
+```
+
+## メモリ
+
+消費の主役は canvas のピクセルバッファで、<strong>幅 × 高さ × dpr² × 4byte</strong>。
+粒（Flake）は 1 片が小さなオブジェクトで、<code>amount</code> 数十〜数百でも数十 KB 程度と誤差です。
+効くのは<strong>表示サイズと canvas の枚数</strong>で、<code>layer="both"</code> は canvas 2 枚ぶん
+（およそ 2 倍）になります。
+
+## 補足
+
+- 初回の補充だけ範囲全体に散らし、「既に降っている途中」の状態から始める
+- 下端に近づくほど透明にフェードさせる
+- アンマウント時は rAF とタイマーを止める
+
+</div>
+</Unstyled>
