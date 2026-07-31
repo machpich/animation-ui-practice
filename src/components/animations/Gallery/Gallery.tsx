@@ -5,6 +5,7 @@ import HeartCrossBeam from '../css/heart-like/CrossBeam/HeartCrossBeam'
 import Burst from '../canvas/confetti/Burst/Burst'
 import Fireworks from '../canvas/confetti/Fireworks/Fireworks'
 import Cannons from '../canvas/confetti/Cannons/Cannons'
+import Rain from '../canvas/confettiRain/Rain/Rain'
 import LikeAnimation from '../rive/LikeAnimation/LikeAnimation'
 
 export const Gallery = () => {
@@ -44,6 +45,20 @@ export const Gallery = () => {
       <div>
         <h3>Confetti - Cannons</h3>
         <Cannons />
+      </div>
+      <div>
+        <h3>Confetti Rain - Rain</h3>
+        <Rain amount={60}>
+          <div
+            style={{
+              width: 320,
+              height: 320,
+              borderRadius: 12,
+              background:
+                'radial-gradient(120% 100% at 50% 0%, #1b2438 0%, #131a29 60%, #0c111c 100%)',
+            }}
+          />
+        </Rain>
       </div>
       <div>
         <h3>Rive</h3>
