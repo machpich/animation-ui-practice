@@ -1,0 +1,16 @@
+/* 可視範囲。はみ出た分を隠して「窓」を作る */
+.viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+/* 流れる帯。x と gap は inline style（motion の style）で渡すのでここには書かない。
+   x は motion 値で毎フレーム更新するため transform も書かない */
+.track {
+  display: flex;
+  width: max-content;
+}
+
+.item {
+  flex-shrink: 0;
+}

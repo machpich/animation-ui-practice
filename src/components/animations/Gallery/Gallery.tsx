@@ -8,6 +8,8 @@ import Burst from '../canvas/confetti/Burst/Burst'
 import Fireworks from '../canvas/confetti/Fireworks/Fireworks'
 import Cannons from '../canvas/confetti/Cannons/Cannons'
 import Rain from '../canvas/confettiRain/Rain/Rain'
+import AutoCarouselMotion from '../css/auto-carousel/Motion/AutoCarouselMotion'
+import { carouselTiles } from '../css/auto-carousel/carouselTiles'
 import LikeAnimation from '../rive/LikeAnimation/LikeAnimation'
 
 // 各サンプルを枠付きで並べる 1 セル。見出し + 中身を中央寄せで囲む
@@ -75,6 +77,11 @@ export const Gallery = () => {
               'radial-gradient(120% 100% at 50% 0%, #1b2438 0%, #131a29 60%, #0c111c 100%)',
           }}
         />
+      </Item>
+      <Item title="Auto Carousel - Motion">
+        <div style={{ width: '100%', overflow: 'hidden' }}>
+          <AutoCarouselMotion pauseOnHover>{carouselTiles}</AutoCarouselMotion>
+        </div>
       </Item>
       <Item title="Rive">
         <LikeAnimation />
