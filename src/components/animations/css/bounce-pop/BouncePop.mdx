@@ -1,0 +1,59 @@
+import { Meta, Unstyled } from '@storybook/addon-docs/blocks'
+
+<Meta title="Animations/Bounce Pop/About" />
+
+<Unstyled>
+<div className="prose">
+
+# Bounce Pop の考え方
+
+メニューボタン（円）を押すと、その角を起点に div が「ぽよんぽよん」と柔らかく弾んで
+せり出してくるモーダルです。閉じるときは同じ角へ引っ込みます。
+
+## 設計思想
+
+<dl>
+  <dt>起点（頂点）を固定して「そこから生える」感を作る</dt>
+  <dd>
+    <code>transform-origin</code> をボタン側の角に固定し、そこから <code>scale 0 → 1</code> で
+    伸ばすことで、ボタンから div が生えてくるように見せます。起点は <code>origin</code> prop で
+    9 方向プリセット（<code>top-right</code> 等）または <code>transform-origin</code> の生値
+    （<code>top 100px right 30px</code> 等）を渡して変えられます。
+  </dd>
+  <dt>「ぽよん」は行き過ぎ→沈み→戻りの多段 keyframe で作る</dt>
+  <dd>
+    弾む質感は easing だけでなく keyframe の値で作ります。<code>1.08 → 0.97 → 1.03 → 1</code> と
+    山を 2 回、控えめに作って減衰させ、<code>ease-in-out</code> で各山の角を丸めると柔らかい
+    「ぽよんぽよん」になります。派手にしたいときはピーク値を、コミカルにしたいときは山の数を
+    増やします。
+  </dd>
+  <dt>開き / 閉じは別 keyframe に分け、逆再生に頼らない</dt>
+  <dd>
+    閉じを「開きの逆再生（<code>animation-direction: reverse</code>）」で作ると、同一要素・同名
+    アニメのままだと再生が再発火しないことがあります。開き（<code>pop-in</code>）と
+    閉じ（<code>pop-out</code>）を別 keyframe にして <code>animation-name</code> を差し替えると、
+    確実に再生され挙動も読みやすくなります。
+  </dd>
+  <dt>速度・頂点は CSS 変数経由で外から差し替える</dt>
+  <dd>
+    <code>durationMs</code> / <code>origin</code> の props を <code>--pop-duration</code> /
+    <code>--pop-origin</code> という CSS 変数に流し込み、<code>module.css</code> 側が
+    <code>var(--pop-duration, 0.5s)</code> のように既定値付きで受けます。CSS にロジックを持たせず、
+    React 側は「値を変数に載せるだけ」で済みます。
+  </dd>
+</dl>
+
+## React 化のポイント
+
+開くたびに <code>key</code> を更新して div を作り直し、<code>pop-in</code> を毎回頭から再生させます。
+閉じは即アンマウントせず、<code>closing</code> フラグで <code>pop-out</code> を流し、
+<code>onAnimationEnd</code>（閉じアニメ完了時のみ）で実際に DOM から外します。
+
+## Storybook で見るときの注意
+
+このコンポーネントは <code>position: fixed</code> の全画面モーダルです。Story / Gallery では
+プレビュー枠を突き抜けないよう、<code>transform</code> を効かせた高さ付きのラッパーで包み、
+<code>fixed</code> の基準をビューポートからそのラッパーに切り替えています。
+
+</div>
+</Unstyled>
