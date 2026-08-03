@@ -56,17 +56,18 @@ export const Gallery = () => {
       </div>
       <div>
         <h3>Confetti Rain - Rain</h3>
-        <Rain amount={60}>
-          <div
-            style={{
-              width: 320,
-              height: 320,
-              borderRadius: 12,
-              background:
-                'radial-gradient(120% 100% at 50% 0%, #1b2438 0%, #131a29 60%, #0c111c 100%)',
-            }}
-          />
-        </Rain>
+        {/* Rain の .stage は height:100% なので、降る範囲のサイズは style で明示する
+            （高さを渡さないと canvas がセルを突き抜けて画面全体に降ってしまう） */}
+        <Rain
+          amount={60}
+          style={{
+            width: '100%',
+            height: 320,
+            borderRadius: 12,
+            background:
+              'radial-gradient(120% 100% at 50% 0%, #1b2438 0%, #131a29 60%, #0c111c 100%)',
+          }}
+        />
       </div>
       <div>
         <h3>Rive</h3>
