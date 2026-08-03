@@ -1,3 +1,4 @@
+import BouncePop from '../css/bounce-pop/BouncePop'
 import HoverEffect from '../css/hover-effect/HoverEffect'
 import HeartParticleBurst from '../css/heart-like/ParticleBurst/HeartParticleBurst'
 import HeartBurst from '../css/heart-like/HeartBurst/HeartBurst'
@@ -18,6 +19,13 @@ export const Gallery = () => {
         padding: '2rem',
       }}
     >
+      <div>
+        <h3>Bounce Pop</h3>
+        {/* fixed 配置のモーダルを枠内に閉じ込める（transform で fixed の基準をこの枠にする） */}
+        <div style={{ position: 'relative', height: 320, transform: 'translateZ(0)' }}>
+          <BouncePop />
+        </div>
+      </div>
       <div>
         <h3>hover-effect</h3>
         <HoverEffect />
