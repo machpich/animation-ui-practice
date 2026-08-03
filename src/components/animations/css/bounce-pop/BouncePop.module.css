@@ -1,0 +1,110 @@
+/* モーダル想定：クリックで黒背景オーバーレイを開閉し、円ボタンの下に吹き出しを出す */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  animation: fade-in var(--pop-duration, 0.32s) ease both;
+}
+
+/* 円ボタンと吹き出しをまとめて置く基準。右端をボタンに揃えるため右上に固定配置 */
+.anchor {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* 吹き出しの右端をボタンに揃える */
+}
+
+.trigger {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: none;
+  background: #fe587a;
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.box {
+  margin-top: 12px; /* ボタンの下に少し離して出す */
+  display: grid;
+  place-items: center;
+  width: 200px;
+  height: 120px;
+  border-radius: 16px;
+  background: #fff;
+  font-size: 40px;
+
+  /* 出現時の頂点（伸びる起点）は --pop-origin で外から差し替え可能（既定 right top）。
+     角から縦横に伸び、山を 2 回、控えめに「ぽよんぽよん」と柔らかく弾む。
+     ease-in-out で各山の角を丸め、やわらかい印象にする。
+     速度は --pop-duration で差し替え可能（既定 0.5s） */
+  transform-origin: var(--pop-origin, right top);
+  animation: pop-in var(--pop-duration, 0.5s) ease-in-out both;
+}
+
+/* 閉じるとき：開き用とは別の keyframes に差し替えて、素直に縮んで消える */
+.closing.overlay {
+  animation-name: fade-out;
+}
+.closing.box {
+  animation-name: pop-out;
+  animation-timing-function: ease-in;
+}
+
+@keyframes pop-in {
+  /* ボタン側の角（右上）を起点に、縦横どちらもニョキッと伸びる。
+     scale 0 → 1 へ。山を 2 回、控えめに作って「ぽよんぽよん」と柔らかく弾む */
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  40% {
+    transform: scale(1.08); /* 1 山目：控えめに行き過ぎ */
+    opacity: 1;
+  }
+  60% {
+    transform: scale(0.97); /* やわらかく沈む */
+  }
+  80% {
+    transform: scale(1.03); /* 2 山目：さらに小さく弾む（減衰） */
+  }
+  100% {
+    transform: scale(1); /* 定寸に落ち着く */
+    opacity: 1;
+  }
+}
+
+/* 閉じ：ボタン側の角（右上）へ縦横とも引っ込んで消える */
+@keyframes pop-out {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
