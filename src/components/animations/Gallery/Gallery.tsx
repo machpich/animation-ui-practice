@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import BouncePop from '../css/bounce-pop/BouncePop'
 import HoverEffect from '../css/hover-effect/HoverEffect'
 import HeartParticleBurst from '../css/heart-like/ParticleBurst/HeartParticleBurst'
@@ -9,6 +10,21 @@ import Cannons from '../canvas/confetti/Cannons/Cannons'
 import Rain from '../canvas/confettiRain/Rain/Rain'
 import LikeAnimation from '../rive/LikeAnimation/LikeAnimation'
 
+// 各サンプルを枠付きで並べる 1 セル。見出し + 中身を中央寄せで囲む
+const Item = ({ title, children }: { title: string; children: ReactNode }) => (
+  <div
+    style={{
+      border: '1px solid #e2e2e2',
+      borderRadius: 12,
+      padding: '1.25rem',
+      background: '#fff',
+    }}
+  >
+    <h3 style={{ margin: '0 0 1rem' }}>{title}</h3>
+    <div style={{ display: 'grid', placeItems: 'center', minHeight: 320 }}>{children}</div>
+  </div>
+)
+
 export const Gallery = () => {
   return (
     <div
@@ -19,43 +35,34 @@ export const Gallery = () => {
         padding: '2rem',
       }}
     >
-      <div>
-        <h3>Bounce Pop</h3>
+      <Item title="Bounce Pop">
         {/* fixed 配置のモーダルを枠内に閉じ込める（transform で fixed の基準をこの枠にする） */}
-        <div style={{ position: 'relative', height: 320, transform: 'translateZ(0)' }}>
+        <div style={{ position: 'relative', width: '100%', height: 320, transform: 'translateZ(0)' }}>
           <BouncePop />
         </div>
-      </div>
-      <div>
-        <h3>hover-effect</h3>
+      </Item>
+      <Item title="hover-effect">
         <HoverEffect />
-      </div>
-      <div>
-        <h3>Heart Like - Particle Burst</h3>
+      </Item>
+      <Item title="Heart Like - Particle Burst">
         <HeartParticleBurst />
-      </div>
-      <div>
-        <h3>Heart Like - Heart Burst</h3>
+      </Item>
+      <Item title="Heart Like - Heart Burst">
         <HeartBurst />
-      </div>
-      <div>
-        <h3>Heart Like - Cross Beam</h3>
+      </Item>
+      <Item title="Heart Like - Cross Beam">
         <HeartCrossBeam />
-      </div>
-      <div>
-        <h3>Confetti - Burst</h3>
+      </Item>
+      <Item title="Confetti - Burst">
         <Burst />
-      </div>
-      <div>
-        <h3>Confetti - Fireworks</h3>
+      </Item>
+      <Item title="Confetti - Fireworks">
         <Fireworks />
-      </div>
-      <div>
-        <h3>Confetti - Cannons</h3>
+      </Item>
+      <Item title="Confetti - Cannons">
         <Cannons />
-      </div>
-      <div>
-        <h3>Confetti Rain - Rain</h3>
+      </Item>
+      <Item title="Confetti Rain - Rain">
         {/* Rain の .stage は height:100% なので、降る範囲のサイズは style で明示する
             （高さを渡さないと canvas がセルを突き抜けて画面全体に降ってしまう） */}
         <Rain
@@ -68,11 +75,10 @@ export const Gallery = () => {
               'radial-gradient(120% 100% at 50% 0%, #1b2438 0%, #131a29 60%, #0c111c 100%)',
           }}
         />
-      </div>
-      <div>
-        <h3>Rive</h3>
+      </Item>
+      <Item title="Rive">
         <LikeAnimation />
-      </div>
+      </Item>
     </div>
   )
 }
