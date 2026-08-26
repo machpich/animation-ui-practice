@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import AutoCarouselMotion from './AutoCarouselMotion'
-import { carouselTiles } from '../carouselTiles'
+import { carouselTiles } from './carouselTiles'
 import tsx from './AutoCarouselMotion.tsx?raw'
 import css from './AutoCarouselMotion.module.css?raw'
 
