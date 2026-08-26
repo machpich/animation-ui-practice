@@ -1,0 +1,55 @@
+import { Meta, Unstyled } from '@storybook/addon-docs/blocks'
+
+<Meta title="Animations/Auto Carousel/About" />
+
+<Unstyled>
+<div className="prose">
+
+# Auto Carousel の考え方
+
+要素が途切れなく横へ流れ続ける「オートカルーセル（マーキー）」を **motion/react** で
+実装したものです。`speed`（px/秒）・`direction`・`gap`・`pauseOnHover` を props で受け取ります。
+
+## 核：2 セット並べて 1 セット分ずらす
+
+無限ループの肝は、**children を 2 セット並べ、帯全体を 1 セット分だけずらし続ける**ことです。
+
+- 帯には同じ中身が `[...items, ...items]` で 2 回入っている。
+- これを 1 セット分ずらし切った瞬間、窓に見えている絵柄は開始時とまったく同じになる。
+- そこで位置を先頭へ戻せば、見た目は変わらないまま無限に流れ続ける（＝継ぎ目が出ない）。
+
+```
+[1 2 3 4 5][1 2 3 4 5]   ← 2 セット並べる
+ └── 窓 ──┘
+        ↓ 1 セット分ずらす
+     [1 2 3 4 5][1 2 3 4 5]
+      └── 窓 ──┘            ← 見た目は開始と同一 → ここで先頭へ戻す
+```
+
+## 実装：毎フレーム進めて剰余ラップ
+
+<code>useAnimationFrame</code> で帯の <code>x</code> を毎フレーム自前で進め、
+1 セット分（<code>oneSetWidth</code>）で剰余ラップします。
+
+```ts
+const oneSetWidth = track.scrollWidth / 2 // 帯は 2 セット分なのでその半分が 1 周ぶん
+// 毎フレーム speed×Δt だけ進め、oneSetWidth を超えたら剰余で先頭へ戻す
+```
+
+位置を常に手元に持つので、ホバー停止は「フレーム更新をスキップするだけ」で位置が保持され、
+速度・向きの動的な変更にも強いのが利点です。見た目のスクロール速度を安定させたいので、
+props は `duration`（1 周の秒数）ではなく **`speed`（px/秒）** で受け取ります。
+
+> gap を入れても、末尾セット間の gap は帯の実幅（<code>scrollWidth</code>）に含まれて測られるため、
+> <code>scrollWidth / 2</code> がそのまま正しい 1 周分（1 セット + gap 1 個）になります。
+
+## 動かして確認
+
+左のサイドバーから **Motion** の各 Story（Default / RightDirection / PauseOnHover）を開いてください。
+PauseOnHover はカルーセルにマウスを載せると流れが止まります。
+
+> CSS だけで作る版（<code>@keyframes</code> で <code>translateX</code> を回す王道パターン）は
+> またの機会に追加予定です。
+
+</div>
+</Unstyled>
