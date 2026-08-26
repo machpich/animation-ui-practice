@@ -8,8 +8,8 @@ import Burst from '../canvas/confetti/Burst/Burst'
 import Fireworks from '../canvas/confetti/Fireworks/Fireworks'
 import Cannons from '../canvas/confetti/Cannons/Cannons'
 import Rain from '../canvas/confettiRain/Rain/Rain'
-import AutoCarouselMotion from '../css/auto-carousel/Motion/AutoCarouselMotion'
-import { carouselTiles } from '../css/auto-carousel/carouselTiles'
+import AutoCarouselMotion from '../motion/auto-carousel/AutoCarouselMotion'
+import { carouselTiles } from '../motion/auto-carousel/carouselTiles'
 import LikeAnimation from '../rive/LikeAnimation/LikeAnimation'
 
 // 各サンプルを枠付きで並べる 1 セル。見出し + 中身を中央寄せで囲む
