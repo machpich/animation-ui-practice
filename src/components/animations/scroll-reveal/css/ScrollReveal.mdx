@@ -1,0 +1,103 @@
+import { Meta, Unstyled } from '@storybook/addon-docs/blocks'
+
+<Meta title="Animations/Scroll Reveal/CSS/About" />
+
+<Unstyled>
+<div className="prose">
+
+# Scroll Reveal（CSS 版）の考え方
+
+スクロールで下からふわっと現れる演出を、**motion を使わず標準機能だけ**で作ったものです。
+`motion/react` 版と見た目は同じで、中身の役割分担だけが違います。
+
+## 役割はたった 2 つに分かれる
+
+スクロール出現がやっていることは、突き詰めると次の 2 つだけです。
+
+1. **「要素が画面に入ったか」の判定** → <code>IntersectionObserver</code>（ブラウザ標準）
+2. **「ふわっと動かす」** → CSS の <code>transition</code>
+
+motion 版はこの両方をライブラリが肩代わりしていました。CSS 版では 1 を自分で書き、
+2 を CSS に任せます。
+
+```tsx
+const io = new IntersectionObserver(
+  ([entry]) => {
+    if (entry.isIntersecting) {
+      setShown(true)
+      if (once) io.disconnect()   // 1 回だけ
+    } else if (!once) {
+      setShown(false)             // 毎回：外れたら戻す
+    }
+  },
+  // threshold: 何割見えたら発火するか。
+  // rootMargin で発火ラインを下辺より内側へ上げ、境界で判定が往復しないようにする
+  { threshold: amount, rootMargin: '0px 0px -15% 0px' },
+)
+```
+
+`isIntersecting` で `.visible` クラスを付け外しするだけ。動きは CSS が持ちます。
+
+```css
+.reveal {
+  opacity: 0;
+  transform: translateY(var(--reveal-distance, 64px));
+  transition: opacity .8s ease-out, transform .8s var(--reveal-ease, ease-out);
+}
+.reveal.visible { opacity: 1; transform: none; }
+```
+
+距離・速度・イージングは **CSS 変数**にして props から差し込みます。JS は状態（見えたか）
+だけを持ち、見た目の値は CSS 側に置く、という分担です。
+
+## ガタつき対策：観測する要素と動く要素を分ける（2 層）
+
+素朴に「観測している要素そのものを動かす」と、`once=false` のときガタつきます。`.visible` で
+上へ動いた要素が発火ラインを自分で跨いでしまい、付与⇄解除を繰り返すためです。そこで
+**外枠（`ref` を付けて観測する・動かさない）と内側（`.reveal`・実際に動く）を分けます**。
+
+```tsx
+<div ref={ref} style={style}>          {/* 観測枠：動かない */}
+  <div className={`reveal ${shown ? 'visible' : ''}`}>  {/* 動くのは内側だけ */}
+    {children}
+  </div>
+</div>
+```
+
+これで動いても観測枠は発火ラインを跨がず、往復が消えます（motion 版と同じ考え方）。
+
+## 「1 回だけ / 毎回」も IntersectionObserver 側
+
+motion 版では `viewport.once` 一つでしたが、CSS 版では observer のコールバックで表現します。
+
+- `once=true` … 一度 `isIntersecting` になったら <code>disconnect()</code> して観測をやめる
+- `once=false` … 画面外へ出た（`!isIntersecting`）ら `.visible` を外し、再入で再発火
+
+## 着地の質感（settle）
+
+`snap` / `smooth` は CSS 変数 `--reveal-ease` の cubic-bezier を差し替えるだけです。
+
+| settle | `--reveal-ease` | 見え方 |
+|---|---|---|
+| `snap`（既定） | `cubic-bezier(.175,.885,.32,1.275)` | 定位置を少し通り越して戻る |
+| `smooth` | `cubic-bezier(.16,1,.3,1)` | 吸い付いて止まる |
+
+## motion 版との使い分け
+
+| | motion/react 版 | CSS 版（これ） |
+|---|---|---|
+| 依存 | motion が必要 | ゼロ |
+| 見えた判定 | `whileInView` 内蔵 | IntersectionObserver を自分で |
+| 動き | JS 補間 | CSS transition |
+| 向いている場面 | 速度・向きを動的に変える・複雑な連動 | 依存を増やさず素直に出したいとき |
+
+reduced-motion は CSS 版では <code>@media (prefers-reduced-motion: reduce)</code> で
+縦移動を切り、opacity のフェードだけにしています（JS の分岐が要らない）。
+
+## 動かして確認
+
+左のサイドバーから **Sections** ストーリーを開き、枠内を下へスクロールしてください。
+Controls で `distance` / `duration` / `settle` / `once` / `amount` を変えると全セクションに反映されます。
+
+</div>
+</Unstyled>

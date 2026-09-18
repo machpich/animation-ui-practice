@@ -1,0 +1,30 @@
+/* 出現前：下へ沈んで透明。距離・速度は CSS 変数で外から差し込む */
+.reveal {
+  opacity: 0;
+  transform: translateY(var(--reveal-distance, 64px));
+  transition:
+    opacity var(--reveal-duration, 0.8s) ease-out,
+    transform var(--reveal-duration, 0.8s) var(--reveal-ease, ease-out);
+}
+
+/* IntersectionObserver が付ける。定位置・不透明へ戻す */
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* 着地の質感。snap は定位置を少し通り越して戻る、smooth は吸い付いて止まる */
+.snap {
+  --reveal-ease: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.smooth {
+  --reveal-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 酔いやすい縦移動を切り、フェードのみにする */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transform: none;
+    transition: opacity var(--reveal-duration, 0.8s) ease-out;
+  }
+}
