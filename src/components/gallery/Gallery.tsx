@@ -10,6 +10,8 @@ import Cannons from '../animations/canvas/confetti/Cannons/Cannons'
 import Rain from '../animations/canvas/confettiRain/Rain/Rain'
 import AutoCarouselMotion from '../animations/motion/auto-carousel/AutoCarouselMotion'
 import { carouselTiles } from '../animations/motion/auto-carousel/carouselTiles'
+import ScrollReveal from '../animations/scroll-reveal/motion/ScrollReveal'
+import ScrollRevealCss from '../animations/scroll-reveal/css/ScrollReveal'
 import LikeAnimation from '../animations/rive/LikeAnimation/LikeAnimation'
 
 // 各サンプルを枠付きで並べる 1 セル。見出し + 中身を中央寄せで囲む
@@ -24,6 +26,59 @@ const Item = ({ title, children }: { title: string; children: ReactNode }) => (
   >
     <h3 style={{ margin: '0 0 1rem' }}>{title}</h3>
     <div style={{ display: 'grid', placeItems: 'center', minHeight: 320 }}>{children}</div>
+  </div>
+)
+
+// motion 版・CSS 版で共通のスクロールデモ。Reveal に描画する実装コンポーネントを渡す
+const ScrollRevealDemo = ({
+  Reveal,
+}: {
+  Reveal: typeof ScrollReveal | typeof ScrollRevealCss
+}) => (
+  <div
+    style={{
+      width: '100%',
+      height: 320,
+      overflowY: 'auto',
+      border: '1px dashed #cbd5e1',
+      borderRadius: 12,
+    }}
+  >
+    <div style={{ padding: '0.75rem', color: '#94a3b8', textAlign: 'center' }}>
+      ↓ スクロールすると順に上がってくる（背景色で境目が分かる） ↓
+    </div>
+    {['Section 1', 'Section 2', 'Section 3'].map((label, i) => (
+      <section
+        key={label}
+        style={{
+          display: 'grid',
+          placeItems: 'center',
+          minHeight: 240,
+          background: ['#eef2ff', '#fef2f5', '#effaf3'][i],
+        }}
+      >
+        <Reveal once={false}>
+          <div
+            style={{
+              display: 'grid',
+              placeItems: 'center',
+              width: 200,
+              height: 120,
+              borderRadius: 16,
+              background: [
+                'linear-gradient(135deg, #fe587a, #ff9a6b)',
+                'linear-gradient(135deg, #6b8bff, #7ee8fa)',
+                'linear-gradient(135deg, #8e6bff, #ff6bd6)',
+              ][i],
+              color: '#fff',
+              fontWeight: 600,
+            }}
+          >
+            {label}
+          </div>
+        </Reveal>
+      </section>
+    ))}
   </div>
 )
 
@@ -77,6 +132,12 @@ export const Gallery = () => {
               'radial-gradient(120% 100% at 50% 0%, #1b2438 0%, #131a29 60%, #0c111c 100%)',
           }}
         />
+      </Item>
+      <Item title="Scroll Reveal - Motion">
+        <ScrollRevealDemo Reveal={ScrollReveal} />
+      </Item>
+      <Item title="Scroll Reveal - CSS (IntersectionObserver)">
+        <ScrollRevealDemo Reveal={ScrollRevealCss} />
       </Item>
       <Item title="Auto Carousel - Motion">
         <div style={{ width: '100%', overflow: 'hidden' }}>

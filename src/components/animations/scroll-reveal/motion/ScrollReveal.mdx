@@ -1,0 +1,99 @@
+import { Meta, Unstyled } from '@storybook/addon-docs/blocks'
+
+<Meta title="Animations/Scroll Reveal/Motion/About" />
+
+<Unstyled>
+<div className="prose">
+
+# Scroll Reveal の考え方
+
+スクロールして要素が画面に入ってきたとき、**下からふわっと現れて正しい位置にカチッと収まる**
+演出を **motion/react** で実装したものです。`distance`・`duration`・`delay`・`once`・
+`amount`・`settle` を props で受け取ります。
+
+## 「ふわっ」の正体は blur ではなく、距離 × 時間 × 着地イージング
+
+「ちゃんとふわっと」見せるのに、ぼかしや派手な効果は要りません。実際に動かすのは
+**`opacity 0→1` と `translateY` だけ**で、効いているのは次の 3 つの掛け算です。
+
+1. **距離を大きめに**（既定 64px）。移動量が小さいと「事務的にパッと出る」印象になる。
+2. **時間をたっぷり**（既定 0.8s）。速いと「ふわっ」の余韻が出ない。
+3. **着地のイージング**。ここが体感をいちばん左右する。
+
+## 「正しい場所にハマる」＝ overshoot する着地
+
+<code>settle</code> prop で着地のイージング（<code>cubic-bezier</code>）を切り替えます。
+
+| settle | イージング | 見え方 |
+|---|---|---|
+| `snap`（既定） | `cubic-bezier(.175,.885,.32,1.275)`（easeOutBack） | 定位置を**少し通り越してから戻る**＝「カチッとハマった」感 |
+| `smooth` | `cubic-bezier(.16,1,.3,1)`（easeOutExpo） | 行き過ぎず、**吸い付いて**止まる |
+
+`snap` の cubic-bezier は 4 つ目の値が `1.275`（＝1 を超える）なので、進捗が一瞬 100% を
+追い越します。この「行き過ぎて戻る」一手が、物理的にハマった感触を生みます。
+
+## 実装：観測枠と動く要素を分ける（2 層）
+
+<code>whileInView</code> で「画面に入ったか」を判定し、<code>initial</code>／<code>animate</code> を
+variants で切り替えます。ただし **1 層だと `once=false` のときガタつく**：snap の overshoot で
+要素が発火ラインを自分で跨ぎ、付与⇄解除を繰り返すためです。そこで**外側（観測枠・動かない）と
+内側（実際に動く）を分ける**2 層構成にしています。
+
+```tsx
+<motion.div
+  initial="hidden"
+  whileInView="visible"
+  viewport={{ once, amount, margin: '0px 0px -15% 0px' }} // 動かない観測枠
+>
+  <motion.div                                   // 動くのは内側だけ
+    variants={{ hidden: { opacity: 0, y: distance }, visible: { opacity: 1, y: 0 } }}
+    transition={{ duration, delay, ease }}      // ease は settle で切り替え
+  >
+    {children}
+  </motion.div>
+</motion.div>
+```
+
+`margin`（発火ラインを下辺より内側へ上げる）も合わせて入れ、要素が境界ちょうどで静止しても
+判定が往復しないようにしています。
+
+## 「1 回だけ」と「毎回」を分けるもの＝`viewport.once`
+
+| once | 挙動 | 向いている場面 |
+|---|---|---|
+| `true`（既定） | 一度出たら以後は動かない | ブログ記事・LP |
+| `false` | 画面外→再入のたびに出し直す | 挙動を何度も確認したいとき |
+
+## セクションを並べれば、一つずつ上がってくる
+
+このコンポーネントの本領は、**たくさん並べたとき**に出ます。各要素は「自分が画面に
+入った瞬間」に発火するので、ページに縦に並べてスクロールすると、
+**セクションが一つずつ順に上がってくる**ページ演出になる。
+
+```tsx
+{sections.map((s) => (
+  <ScrollReveal key={s.id}>{s.body}</ScrollReveal>
+))}
+```
+
+親でまとめて制御しているわけではなく、**同じ部品を並べているだけ**です。
+スクロール量に応じて自然に時間差がつくため、1 画面内でまとめて出す stagger とは違い、
+「読み進めるほど現れる」体験になります。左のサイドバーの **Sections** ストーリーで確認できます。
+
+> 1 画面に収まる複数要素を意図的に時間差で出したいときは、各要素に `delay` を
+> 段階的（0, 0.1, 0.2…）に渡します。
+
+## reduced-motion への配慮
+
+`snap` の overshoot（通り越して戻る動き）は、OS で「視差効果を減らす」を有効にしている
+ユーザーには酔いの原因になりえます。そこで <code>useReducedMotion()</code> が `true` の
+ときは**縦移動と overshoot を切り、opacity のフェードだけ**にしています。
+派手な動きを既定にするなら、退避もセットで用意するのが筋、という判断です。
+
+## 動かして確認
+
+左のサイドバーから **Sections** ストーリーを開き、枠内を下へスクロールしてください。
+Controls で `distance` / `duration` / `settle` / `once` / `amount` を変えると全セクションに反映されます。
+
+</div>
+</Unstyled>
